@@ -2,6 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const restartButton = document.getElementById('restart');
 const nextLevelButton = document.getElementById('nextLevel');
+const backToHomeButton = document.getElementById('backToHome');
 const scoreDisplay = document.getElementById('score');
 const levelDisplay = document.getElementById('level');
 const needleCountDisplay = document.getElementById('needleCount');
@@ -12,7 +13,7 @@ let gameOver = false;
 let levelComplete = false;
 let centerX, centerY;
 const discRadius = 100;
-let rotationSpeed = 0.02; // 降低初始转速
+let rotationSpeed = 0.02;
 let discAngle = 0;
 let needles = [];
 let pendingNeedle;
@@ -34,7 +35,7 @@ function initGame() {
     level = 1;
     gameOver = false;
     levelComplete = false;
-    rotationSpeed = 0.02; // 初始转速
+    rotationSpeed = 0.02;
     discAngle = 0;
     needles = [];
     pendingNeedle = { y: canvas.height - 50, active: false };
@@ -48,7 +49,7 @@ function initGame() {
 function nextLevel() {
     level++;
     score += 10;
-    rotationSpeed += 0.005; // 每关转速缓慢增加
+    rotationSpeed += 0.005;
     needles = [];
     pendingNeedle = { y: canvas.height - 50, active: false };
     levelComplete = false;
@@ -109,7 +110,7 @@ function checkCollision() {
         if (adjustedNewAngle < 0) adjustedNewAngle += Math.PI * 2;
         let angleDiff = Math.abs(needleAngle - adjustedNewAngle);
         angleDiff = Math.min(angleDiff, Math.PI * 2 - angleDiff);
-        if (angleDiff < 0.05) {
+        if (angleDiff < 0.05) { // 缩小碰撞检测值
             gameOver = true;
             alert(`游戏结束！积分: ${score}`);
             return;
@@ -173,6 +174,11 @@ canvas.addEventListener('touchstart', (e) => {
 });
 
 restartButton.addEventListener('click', initGame);
+
 nextLevelButton.addEventListener('click', nextLevel);
+
+backToHomeButton.addEventListener('click', () => {
+    window.location.href = '../index.html'; // 跳转到小游戏列表页面
+});
 
 initGame();
