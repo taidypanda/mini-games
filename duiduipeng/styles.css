@@ -46,7 +46,7 @@ body {
     cursor: default;
 }
 
-#hint, #restart {
+#hint, #restart, #backToHome {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;

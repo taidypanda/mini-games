@@ -4,6 +4,8 @@ const hintButton = document.getElementById('hint');
 const scoreDisplay = document.getElementById('score');
 const levelDisplay = document.getElementById('level');
 const rankingList = document.getElementById('ranking-list');
+const backToHomeButton = document.getElementById('backToHome');
+
 let cards = [];
 let flippedCards = [];
 let matchedCards = 0;
@@ -187,5 +189,8 @@ displayRanking(JSON.parse(localStorage.getItem('rankings')) || []);
 
 restartButton.addEventListener('click', resetGame);
 hintButton.addEventListener('click', showHint);
+backToHomeButton.addEventListener('click', () => {
+    window.location.href = '../index.html'; // 跳转到小游戏列表页面
+});
 
 initGame();
