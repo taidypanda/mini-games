@@ -1,0 +1,38 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+.game-container {
+    text-align: center;
+    padding: 10px;
+}
+
+h1 {
+    font-size: 28px;
+    margin: 10px 0;
+}
+
+#score, #level, #needleCount {
+    font-size: 20px;
+    margin: 5px 0;
+}
+
+#gameCanvas {
+    border: 1px solid #ccc;
+    width: 100%;
+    max-width: 400px;
+    height: 600px;
+}
+
+#nextLevel, #restart {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
