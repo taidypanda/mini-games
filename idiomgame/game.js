@@ -1,14 +1,22 @@
-const backToHomeButton = document.getElementById('backToHome');
-
 // 加载 JSON 词库
 fetch('idiom.json')
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('无法加载 idiom.json，状态码: ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('成功加载 idiom.json，数据条数: ', data.length);
         const idioms = data.map(item => ({
             ...item,
             blanks: [] // 初始为空，后面根据难度动态生成
         }));
         initGame(idioms);
+    })
+    .catch(error => {
+        console.error('加载 idiom.json 失败: ', error);
+        document.getElementById('message').textContent = '加载词库失败，请检查 idiom.json 是否存在或格式是否正确！';
     });
 
 // 游戏状态
@@ -36,6 +44,10 @@ const messageDiv = document.getElementById("message");
 
 // 初始化游戏
 function initGame(idioms) {
+    if (!idioms || idioms.length === 0) {
+        messageDiv.textContent = '词库为空，请检查 idiom.json！';
+        return;
+    }
     allIdioms = idioms;
     currentMode = modeSelect.value;
     currentDifficulty = difficultySelect.value;
@@ -46,6 +58,10 @@ function initGame(idioms) {
 
 // 重置游戏
 function resetGame() {
+    if (allIdioms.length === 0) {
+        messageDiv.textContent = '词库未加载，无法开始游戏！';
+        return;
+    }
     const idiom = getNextIdiom();
     const blankCount = currentDifficulty === "easy" ? 1 : currentDifficulty === "medium" ? 2 : 3;
     idiom.blanks = getRandomBlanks(idiom.word.length, blankCount);
@@ -234,7 +250,3 @@ function shuffle(array) {
     }
     return array;
 }
-
-backToHomeButton.addEventListener('click', () => {
-    window.location.href = '../index.html'; // 跳转到小游戏列表页面
-});
