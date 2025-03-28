@@ -9,36 +9,48 @@
             font-family: 'Arial', sans-serif;
             text-align: center;
             padding: 20px;
-            background-color: #f7f7f7;
+            background: linear-gradient(135deg, #a8d08d, #7bbf7e);
             color: #333;
         }
         h1 {
             font-family: 'Arial', sans-serif;
-            color: #0056b3;
+            color: #fff;
             font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         .idiom {
-            font-size: 28px;
+            font-size: 36px;
+            letter-spacing: 10px; /* 增加字间距 */
             margin: 20px 0;
             font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
         .options {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 20px;
             margin: 20px 0;
         }
         .option {
-            padding: 10px 20px;
-            font-size: 18px;
+            padding: 15px 25px;
+            font-size: 20px;
             cursor: pointer;
-            border: 1px solid #333;
+            border: 2px solid #007bff;
             border-radius: 5px;
-            background-color: #f0f0f0;
-            transition: background-color 0.3s ease;
+            background-color: #f0f8ff;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s, transform 0.3s;
         }
         .option:hover {
+            background-color: #007bff;
+            color: white;
+            transform: scale(1.1);
+        }
+        .option.disabled {
             background-color: #d3d3d3;
+            color: #999;
+            cursor: not-allowed;
         }
         .hint, .next-button {
             margin-top: 20px;
@@ -46,11 +58,22 @@
             color: #007bff;
             font-size: 18px;
             text-decoration: underline;
+            transition: color 0.3s;
+        }
+        .hint:hover, .next-button:hover {
+            color: #0056b3;
         }
         #error-message {
             color: red;
             display: none;
             margin-top: 10px;
+        }
+        #success-message {
+            font-size: 20px;
+            font-weight: bold;
+            color: green;
+            display: none;
+            margin-top: 20px;
         }
         #next-button {
             display: none;
@@ -70,33 +93,35 @@
         #next-button:hover {
             background-color: #0056b3;
         }
-        #success-message {
-            font-size: 20px;
+        #score {
+            font-size: 22px;
             font-weight: bold;
-            color: green;
-            display: none;
+            color: #fff;
             margin-top: 20px;
         }
         #explanation {
             display: none;
             margin-top: 10px;
             text-align: left;
+            color: #fff;
         }
-        #score {
-            font-size: 22px;
-            font-weight: bold;
-            color: #0056b3;
-            margin-top: 20px;
+        #explanation-text, #derivation-text, #pinyin-text {
+            display: block;
+            margin-top: 10px;
+        }
+        .idiom-placeholder {
+            border-bottom: 3px solid #007bff;
+            padding: 0 5px;
+            color: #007bff;
         }
     </style>
 </head>
 <body>
     <h1>成语填空游戏</h1>
-    <div id="score">积分: 100</div>
+    <div id="score">积分: 15</div>
     <div class="idiom" id="idiom"></div>
     <div class="options" id="options"></div>
     <div class="hint" id="hint">点击查看提示 (消耗5积分)</div>
-    <button id="back-to-home">返回首页</button>
     <div id="error-message">错误，再试一次！</div>
     <div id="success-message"></div>
     <button id="next-button">下一关</button>
@@ -110,7 +135,7 @@
     <script>
         let idioms = [];
         let correctChar = "";
-        let score = 100;
+        let score = 15;
 
         const successMessages = [
             "太棒了！继续加油！",
@@ -136,7 +161,7 @@
             const wordArray = idiomObj.word.split('');
             const missingIndex = Math.floor(Math.random() * wordArray.length);
             correctChar = wordArray[missingIndex]; // 存储正确答案
-            wordArray[missingIndex] = '（ ）';
+            wordArray[missingIndex] = '_'; // 使用下划线代替括号
 
             document.getElementById("idiom").innerText = wordArray.join('');
             document.getElementById("explanation-text").innerText = idiomObj.explanation;
@@ -189,7 +214,10 @@
                     score += 10; // 答对加分
                     document.getElementById("score").innerText = `积分: ${score}`;
                 } else {
+                    event.target.classList.add('disabled'); // 禁用错误选项
                     document.getElementById("error-message").style.display = "block"; // 显示错误提示
+                    score -= 3; // 错误扣分
+                    document.getElementById("score").innerText = `积分: ${score}`;
                 }
             }
         });
@@ -207,9 +235,7 @@
         document.getElementById("next-button").addEventListener("click", function() {
             getRandomIdiom(); // 进入下一关
         });
-        document.getElementById("back-to-home").addEventListener("click", function() {
-            window.location.href = '../index.html'; // 跳转到小游戏列表页面
-        });
+
         loadIdioms();
     </script>
 </body>
