@@ -8,14 +8,14 @@
         body {
             font-family: 'Arial', 'Microsoft YaHei', sans-serif;
             text-align: center;
-            padding: 40px;
+            padding: 20px;
             background: linear-gradient(135deg, #a8d08d, #7bbf7e);
             color: #333;
             margin: 0;
         }
         h1 {
             color: #fff;
-            font-size: 42px;
+            font-size: 40px;
             text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
         }
@@ -29,15 +29,17 @@
         }
         .options {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4列布局 */
-            grid-template-rows: repeat(2, auto); /* 2行布局 */
-            gap: 20px; /* 调整间距 */
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, auto);
+            gap: 15px; /* 减小间距以适应正方形 */
             margin: 30px auto;
-            max-width: 800px; /* 增加宽度以容纳8个选项 */
-            min-height: 200px; /* 确保高度足够 */
+            max-width: 800px;
+            min-height: 160px; /* 调整高度以适应矮化的选项 */
         }
         .option {
-            padding: 18px; /* 稍减小内边距以适应更多选项 */
+            width: 60px; /* 固定宽度 */
+            height: 60px; /* 固定高度，矮化并正方形 */
+            line-height: 60px; /* 垂直居中文字 */
             font-size: 24px;
             cursor: pointer;
             border: none;
@@ -46,6 +48,7 @@
             color: #333;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
+            text-align: center; /* 水平居中文字 */
         }
         .option:hover {
             background-color: #007bff;
@@ -90,7 +93,7 @@
         }
         #next-button {
             display: none;
-            margin-top: 30px;
+            margin: 30px auto; /* 确保居中 */
             padding: 12px 30px;
             border-radius: 12px;
             font-size: 20px;
@@ -101,6 +104,7 @@
             width: 220px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
         }
         #next-button:hover {
             background-color: #0056b3;
@@ -116,12 +120,10 @@
         }
         #explanation {
             display: none;
-            margin-top: 20px;
+            margin: 20px auto;
             text-align: left;
             color: #fff;
             max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
             background: rgba(255, 255, 255, 0.1);
             padding: 15px;
             border-radius: 10px;
@@ -230,7 +232,7 @@
             const allChars = new Set(idioms.flatMap(i => (i.word ? i.word.split('') : [])));
             allChars.delete(correctChar);
 
-            while (options.length < 8) { // 增加到8个选项
+            while (options.length < 8) {
                 const randomChar = [...allChars][Math.floor(Math.random() * allChars.size)];
                 if (!options.includes(randomChar)) options.push(randomChar);
             }
