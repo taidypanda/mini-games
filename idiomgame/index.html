@@ -21,25 +21,27 @@
         }
         .idiom {
             font-size: 48px;
-            letter-spacing: 15px;
+            letter-spacing: 10px; /* 减小间距，使整体更紧凑 */
             margin: 30px 0;
             color: #fff;
             font-weight: bold;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            display: inline-flex; /* 使用 flex 布局，确保方块和字符对齐 */
+            align-items: center; /* 垂直居中对齐 */
         }
         .options {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(2, auto);
-            gap: 15px; /* 减小间距以适应正方形 */
+            gap: 15px;
             margin: 30px auto;
             max-width: 800px;
-            min-height: 160px; /* 调整高度以适应矮化的选项 */
+            min-height: 160px;
         }
         .option {
-            width: 60px; /* 固定宽度 */
-            height: 60px; /* 固定高度，矮化并正方形 */
-            line-height: 60px; /* 垂直居中文字 */
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
             font-size: 24px;
             cursor: pointer;
             border: none;
@@ -48,7 +50,7 @@
             color: #333;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
-            text-align: center; /* 水平居中文字 */
+            text-align: center;
         }
         .option:hover {
             background-color: #007bff;
@@ -93,7 +95,7 @@
         }
         #next-button {
             display: none;
-            margin: 30px auto; /* 确保居中 */
+            margin: 30px auto;
             padding: 12px 30px;
             border-radius: 12px;
             font-size: 20px;
@@ -136,13 +138,41 @@
         }
         .idiom-placeholder {
             display: inline-block;
-            width: 40px;
-            height: 40px;
+            width: 48px; /* 与字体大小一致 */
+            height: 48px;
             background: #fff;
             border: 2px solid #007bff;
             border-radius: 8px;
             vertical-align: middle;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 0 5px; /* 微调间距 */
+        }
+        .idiom-placeholder.filled {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+            line-height: 48px; /* 与高度一致，确保垂直居中 */
+            text-align: center;
+            font-size: 48px; /* 与成语字体大小一致 */
+            margin: 0 5px; /* 保持间距一致 */
+        }
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .flower {
+            position: absolute;
+            font-size: 24px;
+            animation: fall 3s linear forwards;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100px); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
         }
     </style>
 </head>
@@ -155,23 +185,24 @@
     <div id="error-message">错误，再试一次！</div>
     <div id="success-message"></div>
     <button id="next-button">下一关</button>
-
     <div id="explanation">
         <strong>释义：</strong> <span id="explanation-text"></span><br>
         <strong>出处：</strong> <span id="derivation-text"></span><br>
         <strong>拼音：</strong> <span id="pinyin-text"></span>
     </div>
+    <div id="celebration" class="celebration"></div>
 
     <script>
         let idioms = [];
+        let usedIdioms = new Set();
         let correctChar = "";
         let score = 15;
 
         const successMessages = [
-            "太棒了！继续加油！",
-            "答对了！你真厉害！",
-            "完美！准备好迎接下一关！",
-            "好样的！继续挑战！"
+            "太棒了！继续加油！🎉👍",
+            "答对了！你真厉害！🌟👏",
+            "完美！准备好迎接下一关！✨💪",
+            "好样的！继续挑战！🎊🚀"
         ];
 
         async function loadIdioms() {
@@ -204,14 +235,21 @@
                 return;
             }
 
+            const availableIdioms = idioms.filter(i => !usedIdioms.has(i.word));
+            if (availableIdioms.length === 0) {
+                document.getElementById("idiom").innerText = "所有成语已用完！";
+                return;
+            }
+
             console.log("生成新成语...");
-            const idiomObj = idioms[Math.floor(Math.random() * idioms.length)];
+            const idiomObj = availableIdioms[Math.floor(Math.random() * availableIdioms.length)];
             if (!idiomObj.word) {
                 console.error("无效的成语对象:", idiomObj);
                 document.getElementById("idiom").innerText = "成语数据无效，缺少 'word' 字段";
                 return;
             }
 
+            usedIdioms.add(idiomObj.word);
             const wordArray = idiomObj.word.split('');
             const missingIndex = Math.floor(Math.random() * wordArray.length);
             correctChar = wordArray[missingIndex];
@@ -251,10 +289,28 @@
             console.log("选项已渲染，检查DOM:", optionsContainer.innerHTML);
         }
 
+        function showCelebration() {
+            const celebration = document.getElementById("celebration");
+            celebration.innerHTML = '';
+            for (let i = 0; i < 100; i++) {
+                const flower = document.createElement("div");
+                flower.className = "flower";
+                flower.textContent = ["🌸", "🌼", "🌟", "✨", "👍🏻", "💪🏻", "😆"][Math.floor(Math.random() * 4)];
+                flower.style.left = Math.random() * 100 + "vw";
+                flower.style.animationDuration = (Math.random() * 2 + 3) + "s";
+                celebration.appendChild(flower);
+            }
+            setTimeout(() => celebration.innerHTML = '', 3000);
+        }
+
         document.getElementById("options").addEventListener("click", function(event) {
             if (event.target.classList.contains("option") && !event.target.classList.contains("disabled")) {
                 console.log("点击选项:", event.target.textContent);
                 if (event.target.textContent === correctChar) {
+                    const placeholder = document.querySelector(".idiom-placeholder");
+                    placeholder.textContent = correctChar;
+                    placeholder.classList.add("filled");
+
                     document.getElementById("explanation").style.display = "block";
                     document.getElementById("next-button").style.display = "block";
                     document.getElementById("error-message").style.display = "none";
@@ -262,6 +318,7 @@
                     document.getElementById("success-message").style.display = "block";
                     score += 10;
                     document.getElementById("score").innerText = `积分: ${score}`;
+                    showCelebration();
                 } else {
                     event.target.classList.add("disabled");
                     document.getElementById("error-message").style.display = "block";
