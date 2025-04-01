@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连连看</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .board {
+            display: grid;
+            gap: 5px;
+            justify-content: center;
+            margin: 20px auto;
+            position: relative;
+            z-index: 1;
+            width: fit-content;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .tile {
+            width: 60px;
+            height: 60px;
+            background: lightblue;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 5px;
+            position: relative;
+        }
+        .tile img {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+            background-color: white;
+        }
+        .highlight {
+            border: 5px solid red !important;
+        }
+        .hidden {
+            visibility: hidden;
+        }
+        #timer, #ranking, #hint-button, #next-level-button, #message {
+            margin: 10px;
+        }
+        #ranking {
+            padding: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #message {
+            font-size: 24px;
+            color: #333;
+            display: none; /* 初始隐藏祝贺语 */
+        }
+        #next-level-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #next-level-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: red;
+            opacity: 0.8;
+            border-radius: 50%;
+            animation: fall 3s linear infinite;
+        }
+        @keyframes fall {
+            from { transform: translateY(-100px); opacity: 1; }
+            to { transform: translateY(100vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>连连看</h1>
+    <div id="timer">时间: 0秒</div>
+    <button id="hint-button" onclick="showHint()">提示</button>
+    <div id="game-board" class="board"></div>
+    <div id="message"></div> <!-- 祝贺语直接显示在主界面 -->
+    <button id="next-level-button" onclick="startNextLevel()" disabled>下一关</button>
+    <div id="ranking"></div>
+    <script>
+        let currentLevel = 1;
+        let startTime;
+        let rankings = [];
+        let selectedTiles = [];
+        let timer;
+        const MAX_ROWS = 10; // 最大行数
+        const MAX_COLS = 10; // 最大列数
+
+        class LianLianKan {
+            constructor(level = 1) {
+                this.level = level;
+                this.rows = Math.min(2 + (level - 1), MAX_ROWS); // 从2行开始递增
+                this.cols = Math.min(2 + (level - 1), MAX_COLS); // 从2列开始递增
+                if ((this.rows * this.cols) % 2 !== 0) this.cols += 1; // 确保总数为偶数
+                startTime = Date.now();
+                this.generateSolvableGrid();
+                this.startTimer();
+                document.getElementById("next-level-button").disabled = true; // 确保初始禁用
+                document.getElementById("message").style.display = "none"; // 隐藏祝贺语
+            }
+
+            generateSolvableGrid() {
+                do {
+                    this.grid = this.generateGrid();
+                } while (!this.hasSolution());
+                this.renderBoard();
+            }
+
+            generateGrid() {
+                const totalPairs = (this.rows * this.cols) / 2;
+                let icons = [];
+                for (let i = 1; i <= totalPairs; i++) {
+                    icons.push(i, i);
+                }
+                icons = this.shuffle(icons);
+
+                let grid = [];
+                for (let r = 0; r < this.rows; r++) {
+                    grid.push(icons.splice(0, this.cols));
+                }
+                return grid;
+            }
+
+            hasSolution() {
+                let pairs = {};
+                for (let row = 0; row < this.rows; row++) {
+                    for (let col = 0; col < this.cols; col++) {
+                        let val = this.grid[row][col];
+                        if (val !== null) {
+                            if (!pairs[val]) pairs[val] = [];
+                            pairs[val].push({ row, col });
+                        }
+                    }
+                }
+                return Object.values(pairs).some(pair => pair.length >= 2);
+            }
+
+            shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            renderBoard() {
+                let board = document.getElementById("game-board");
+                board.innerHTML = "";
+                board.style.gridTemplateColumns = `repeat(${this.cols}, 60px)`;
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        let tile = document.createElement("div");
+                        tile.className = "tile";
+                        if (this.grid[r][c] !== null) {
+                            let img = document.createElement("img");
+                            img.src = `images/${this.grid[r][c]}.png`;
+                            img.dataset.value = this.grid[r][c];
+                            tile.appendChild(img);
+                            tile.addEventListener("click", () => this.selectTile(tile, r, c));
+                        }
+                        board.appendChild(tile);
+                    }
+                }
+            }
+
+            selectTile(tile, row, col) {
+                if (selectedTiles.length < 2) {
+                    selectedTiles.push({ tile, row, col });
+                    tile.classList.add("highlight");
+                    if (selectedTiles.length === 2) {
+                        this.checkMatch();
+                    }
+                }
+            }
+
+            checkMatch() {
+                let [tile1, tile2] = selectedTiles;
+                if (tile1.tile.firstChild.dataset.value === tile2.tile.firstChild.dataset.value) {
+                    setTimeout(() => {
+                        tile1.tile.classList.add("hidden");
+                        tile2.tile.classList.add("hidden");
+                        selectedTiles = [];
+                        if (this.isGameOver()) {
+                            clearInterval(timer);
+                            showCongratulations();
+                            document.getElementById("next-level-button").disabled = false; // 启用下一关按钮
+                        }
+                    }, 300);
+                } else {
+                    setTimeout(() => {
+                        tile1.tile.classList.remove("highlight");
+                        tile2.tile.classList.remove("highlight");
+                        selectedTiles = [];
+                    }, 500);
+                }
+            }
+
+            isGameOver() {
+                return document.querySelectorAll(".tile:not(.hidden)").length === 0;
+            }
+
+            startTimer() {
+                const timerElement = document.getElementById("timer");
+                let timeElapsed = 0;
+                clearInterval(timer);
+                timer = setInterval(() => {
+                    timeElapsed++;
+                    timerElement.innerText = `时间: ${timeElapsed}秒`;
+                }, 1000);
+            }
+        }
+
+        function startNextLevel() {
+            let timeTaken = Math.floor((Date.now() - startTime) / 1000);
+            rankings.push({ level: currentLevel, time: timeTaken });
+            rankings.sort((a, b) => a.time - b.time);
+            document.getElementById("ranking").innerHTML = rankings
+                .map(r => `第${r.level}关: ${r.time}秒`)
+                .join('<br>');
+            currentLevel++;
+            new LianLianKan(currentLevel);
+        }
+
+        function showCongratulations() {
+            const messages = ["太棒了！", "完美通关！", "你真厉害！", "胜利啦！"];
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            const messageElement = document.getElementById("message");
+            messageElement.innerText = randomMsg;
+            messageElement.style.display = "block"; // 显示祝贺语
+            for (let i = 0; i < 50; i++) {
+                let confetti = document.createElement("div");
+                confetti.className = "confetti";
+                confetti.style.left = Math.random() * 100 + "vw";
+                confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function showHint() {
+            let tiles = document.querySelectorAll(".tile:not(.hidden) img");
+            let foundPair = {};
+            for (let tile of tiles) {
+                let val = tile.dataset.value;
+                if (foundPair[val]) {
+                    tile.parentNode.classList.add("highlight");
+                    foundPair[val].classList.add("highlight");
+                    setTimeout(() => {
+                        tile.parentNode.classList.remove("highlight");
+                        foundPair[val].classList.remove("highlight");
+                    }, 1000);
+                    return;
+                }
+                foundPair[val] = tile.parentNode;
+            }
+        }
+
+        // 启动游戏
+        new LianLianKan(currentLevel);
+    </script>
+</body>
+</html>
