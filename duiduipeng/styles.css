@@ -61,3 +61,6 @@ body {
     list-style-position: inside;
     padding: 0;
 }
+#controls { margin: 20px; }
+button { padding: 10px 20px; margin: 0 10px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; }
+button:hover { background: #45a049; }

@@ -78,6 +78,9 @@
             border-radius: 50%;
             animation: fall 3s linear infinite;
         }
+        #controls { margin: 20px; }
+        button { padding: 10px 20px; margin: 0 10px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #45a049; }
         @keyframes fall {
             from { transform: translateY(-100px); opacity: 1; }
             to { transform: translateY(100vh); opacity: 0; }
@@ -91,6 +94,7 @@
     <div id="game-board" class="board"></div>
     <div id="message"></div> <!-- 祝贺语直接显示在主界面 -->
     <button id="next-level-button" onclick="startNextLevel()" disabled>下一关</button>
+    <button onclick="backToHome()">回到首页</button>
     <div id="ranking"></div>
     <script>
         let currentLevel = 1;
@@ -268,6 +272,9 @@
                 }
                 foundPair[val] = tile.parentNode;
             }
+        }
+        function backToHome() {
+            window.location.href = '../index.html'; // 跳转到小游戏列表页面
         }
 
         // 启动游戏
